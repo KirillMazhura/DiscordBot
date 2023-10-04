@@ -9,7 +9,7 @@ const gameBot = new Client({
     ]
 })
 
-const BOT_TOKEN="MTE1MDUwNDYxMzc1NDE4NzkwOA.Gg95te.jC3u1W3pJUurk5hWatWeyj9OMqEq9bpe4yxmbk"
+const BOT_TOKEN=""
 gameBot.login(BOT_TOKEN)
 
 gameBot.once("ready", () => {

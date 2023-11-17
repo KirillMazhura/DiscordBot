@@ -1,5 +1,7 @@
 const {Client, GatewayIntentBits} = require("discord.js");
 const { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } = require('discord.js');
+require('dotenv').config()
+// const routes = require("./api/routes/questionRoutes")
 
 const gameBot = new Client({
     intents: [
@@ -8,9 +10,8 @@ const gameBot = new Client({
         GatewayIntentBits.MessageContent
     ]
 })
-
-const BOT_TOKEN="MTE1MDUwNDYxMzc1NDE4NzkwOA.Gg95te.jC3u1W3pJUurk5hWatWeyj9OMqEq9bpe4yxmbk"
-gameBot.login(BOT_TOKEN)
+// console.log(`${process.env.botToken}`)
+gameBot.login(process.env.botToken)
 
 gameBot.once("ready", () => {
     console.log("bot started")
@@ -18,7 +19,7 @@ gameBot.once("ready", () => {
 gameBot.on("messageCreate", (message) => {
     if (message.content == "Hi")
     {
-        msg = message.reply({content: "Hi too", ephemeral: true});
+        message.reply({content: "Hi too", ephemeral: true});
     }
 })
 
@@ -51,7 +52,7 @@ gameBot.on('messageCreate', async (message) => {
         });
   
         // If a response is received, log it
-        message.reply({content: '${response.first().content}', ephemeral: true});
+        message.reply({content: response.first().content, ephemeral: true});
         console.log(`User's response: ${response.first().content}`);
       } catch (error) {
         // If no response is received within the timeout, log an error
@@ -65,25 +66,75 @@ gameBot.on('messageCreate', async (message) => {
     if (message.content.startsWith('!button')) {
       // Create a button 
       //Working on this
-      const button = new ActionRowBuilder()
+      let winstreak = 0
+      const gameButton = new ActionRowBuilder()
       .addComponents(
         new ButtonBuilder()
-        .setCustomId('buttonOne') // This is a unique ID for your button
+        .setCustomId('button1') // This is a unique ID for your button
         .setLabel('Click Me') // The text displayed on the button
-        .setStyle(ButtonStyle.Primary), // Button style (PRIMARY, SECONDARY, SUCCESS, DANGER, LINK)
+        .setStyle(ButtonStyle.Danger), // Button style (PRIMARY, SECONDARY, SUCCESS, DANGER, LINK)
+        new ButtonBuilder()
+        .setCustomId('button2')
+        .setLabel('Click2')
+        .setStyle(ButtonStyle.Primary)
+      )
+      const tryAgainRow = new ActionRowBuilder()
+      .addComponents(
+        new ButtonBuilder()
+        .setCustomId('tryAgain') // This is a unique ID for your button
+        .setLabel('Try again') // The text displayed on the button
+        .setStyle(ButtonStyle.Danger), // Button style (PRIMARY, SECONDARY, SUCCESS, DANGER, LINK)
+        new ButtonBuilder()
+        .setCustomId('exit')
+        .setLabel('Exit')
+        .setStyle(ButtonStyle.Danger)
       )
       const embed = new EmbedBuilder()
+      .setTitle('Mini-game guess the mention')
       .setColor("Blue")
-      .setDescription("Button for test")
+      .setDescription(":slight_smile: "+":arrow_right: "+":angry: "+":heavy_plus_sign: "+":green_circle:")
 
       const embed2 = new EmbedBuilder()
       .setColor("Red")
-      .setDescription("button was pressed") 
+      .setDescription("You are right") 
 
-      message.channel.send({embeds:[embed], components:[button]})
+      const embed3 = new EmbedBuilder()
+      .setColor("Red")
+      .setDescription("Try again") 
+      const msgEmbed = await message.channel.send({embeds:[embed], components:[gameButton]})
       const collector = message.channel.createMessageComponentCollector();
-      collector.on('collect', async i => {
-        await i.update({ embeds: [embed2], components: [button]})
+
+      collector.on('collect', async (interaction) => {
+        if (interaction.customId === 'button2')
+        {
+          winstreak++
+           // Send a message
+          // After a delay (e.g., 5 seconds), edit the message
+          setTimeout(async () => {
+            await msgEmbed.edit({embeds: [embed2], components:[]});
+            const m = message.author;
+            m.send("Current winstreak: "+winstreak.toString());
+          },
+          1000); // Edit the message after 1 seconds
+        }
+        else if (interaction.customId === 'button1')
+        {
+          const m = message.author;
+          winstreak = 0
+          m.send("Current winstreak: "+winstreak.toString());
+          setTimeout(async () => {
+            await msgEmbed.edit({embeds: [embed3], components:[tryAgainRow]});
+            const m = message.author;
+            m.send("Current winstreak: "+winstreak.toString());
+          },
+          1000);
+        }
       })
     }
   });
+  gameBot.on("messageCreate", (message) => {
+    if (message.content == "loq")
+    {
+        message.reply(app)
+    }
+})

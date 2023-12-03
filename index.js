@@ -140,7 +140,7 @@ gameBot.on('messageCreate', async (message) => {
               interaction.update({embeds: [winEmbed], components: []})
             }
             
-        } else if (interaction.customId !== 'answer'+globalIndex+'Button' && interaction.customId !== 'exitButton') {
+        } else if (interaction.customId !== 'answer'+globalIndex+'Button' || interaction.customId !== 'exitButton') {
           questionCounter++
           if(questionCounter<questionslist.length) {
             let guessEmbed = new EmbedBuilder()

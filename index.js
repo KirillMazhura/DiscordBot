@@ -49,15 +49,17 @@ gameBot.on('messageCreate', async (message) => {
       msg = message.channel.send("There are the list of commands\n!button - command that allow to play quiz game\n!Hi  - command that sends greetings to the channel")
     }
   });
-  let activeGameSession = null;
+let activeGameSession = null
 gameBot.on('messageCreate', async (message) => {
     if (message.author.bot) return;
-    if (message.content.startsWith('!button')) {
+    if (message.content.startsWith('!button') && activeGameSession!=true) {
+      activeGameSession = true
       // Create a button 
       //Working on this
       questionslist = questionslist.sort(() => Math.random()-0.5)
       console.log("randomize")
       console.log(questionslist)
+      let maximalwinstreak = 0
       let winstreak = 0
       let globalIndex = 0
       let questionCounter = 0
@@ -74,14 +76,14 @@ gameBot.on('messageCreate', async (message) => {
             globalIndex = index
           }
           })
-          gameButtonRow.addComponents(
-            new ButtonBuilder()
-            .setCustomId('exitButton')
-            .setLabel('exit')
-            .setStyle(ButtonStyle.Danger)
-          )
+          // gameButtonRow.addComponents(
+          //   new ButtonBuilder()
+          //   .setCustomId('exitButton')
+          //   .setLabel('exit')
+          //   .setStyle(ButtonStyle.Danger)
+          // )
       let guessEmbed = new EmbedBuilder()
-      .setTitle(`Mini-game guess the mention\n${questionCounter}/${questionslist.length}`)
+      .setTitle(`Mini-game guess the mention\n${questionCounter+1}/${questionslist.length}`)
       .setColor("Blue")
       .setDescription(`${questionslist[questionCounter].Question}`)
 
@@ -95,21 +97,30 @@ gameBot.on('messageCreate', async (message) => {
       var msgEmbed = await message.channel.send({embeds:[guessEmbed], components:[gameButtonRow]})
       gameBot.on('interactionCreate', interaction => {
         if(!interaction.isButton()) return
-          if (interaction.customId === 'exitButton')
-          {
-            interaction.update({
-              content: "",
-              embeds: [leaveEmbed],
-              components: []
-            })
-          }
+          // if (interaction.customId === 'exitButton')
+          // {
+          //   maximalwinstreak = 0
+          //   winstreak = 0
+          //   globalIndex = 0
+          //   questionCounter = 0
+          //   correctAnswersCounter = 0
+          //   interaction.update({
+          //     content: "",
+          //     embeds: [leaveEmbed],
+          //     components: []
+          //   })
+          // }
           else if (interaction.customId === 'answer'+globalIndex+'Button') {
-            correctAnswersCounter++
             winstreak++
+            if (maximalwinstreak < winstreak) {
+              maximalwinstreak = winstreak
+            }
+            // console.log(winstreak)
+            correctAnswersCounter++
             questionCounter++
             if(questionCounter < questionslist.length) {
               let guessEmbed = new EmbedBuilder()
-            .setTitle(`Mini-game guess the mention\n${questionCounter}/${questionslist.length}`)
+            .setTitle(`Mini-game guess the mention\n${questionCounter+1}/${questionslist.length}`)
             .setColor("Blue")
             .setDescription(`${questionslist[questionCounter].Question}`)
             let gameButtonRow = new ActionRowBuilder()
@@ -125,26 +136,32 @@ gameBot.on('messageCreate', async (message) => {
               globalIndex = index
             }
             })
-            gameButtonRow.addComponents(
-              new ButtonBuilder()
-              .setCustomId('exitButton')
-              .setLabel('exit')
-              .setStyle(ButtonStyle.Danger),
-            )
+            // gameButtonRow.addComponents(
+            //   new ButtonBuilder()
+            //   .setCustomId('exitButton')
+            //   .setLabel('exit')
+            //   .setStyle(ButtonStyle.Danger),
+            // )
             
             interaction.update({embeds: [guessEmbed], components: [gameButtonRow]})
             } else if (questionCounter == questionslist.length) {
               let winEmbed = new EmbedBuilder()
               .setColor("Green")
-              .setDescription(`Here you are!\nYou've got the end of this game!\nCount of correct answers is ${correctAnswersCounter} of ${questionslist.length} and your current winstreak is ${winstreak}\nIf you want to try again you can type !button`)
+              .setDescription(`Here you are!\nYou've got the end of this game!\nCount of correct answers is ${correctAnswersCounter} of ${questionslist.length} and your better winstreak is ${maximalwinstreak}\nIf you want to try again you can type !button`)
               interaction.update({embeds: [winEmbed], components: []})
+              activeGameSession = null
             }
             
-        } else if (interaction.customId !== 'answer'+globalIndex+'Button' || interaction.customId !== 'exitButton') {
+        } else if (interaction.customId !== 'answer'+globalIndex+'Button') {
           questionCounter++
+          if (maximalwinstreak < winstreak) {
+            maximalwinstreak = winstreak
+          }
+          winstreak = 0
+          // console.log(winstreak)
           if(questionCounter<questionslist.length) {
             let guessEmbed = new EmbedBuilder()
-            .setTitle(`Mini-game guess the mention\n${questionCounter}/${questionslist.length}`)
+            .setTitle(`Mini-game guess the mention\n${questionCounter+1}/${questionslist.length}`)
             .setColor("Blue")
             .setDescription(`${questionslist[questionCounter].Question}`)
             let gameButtonRow = new ActionRowBuilder()
@@ -160,12 +177,12 @@ gameBot.on('messageCreate', async (message) => {
               globalIndex = index
             }
             })
-            gameButtonRow.addComponents(
-              new ButtonBuilder()
-              .setCustomId('exitButton')
-              .setLabel('exit')
-              .setStyle(ButtonStyle.Danger),
-            )
+            // gameButtonRow.addComponents(
+            //   new ButtonBuilder()
+            //   .setCustomId('exitButton')
+            //   .setLabel('exit')
+            //   .setStyle(ButtonStyle.Danger),
+            // )
           interaction.update({
             embeds:[guessEmbed],
             components:[gameButtonRow]
@@ -173,12 +190,13 @@ gameBot.on('messageCreate', async (message) => {
           } else if(questionCounter == questionslist.length){
             let winEmbed = new EmbedBuilder()
               .setColor("Green")
-              .setDescription(`Here you are!\nYou've got the end of this game!\nCount of correct answers is ${correctAnswersCounter} of ${questionslist.length} and your current winstreak is ${winstreak}\nIf you want to try again you can type !button`)
+              .setDescription(`Here you are!\nYou've got the end of this game!\nCount of correct answers is ${correctAnswersCounter} of ${questionslist.length} and your better winstreak is ${maximalwinstreak}\nIf you want to try again you can type !button`)
               interaction.update({
                 embeds:[winEmbed],
                 components:[]
               })
               correctAnswersCounter = 0
+              activeGameSession = null
         }
       }
       });
